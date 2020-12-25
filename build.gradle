@@ -1,0 +1,110 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group 'com.github.isyscore'
+version '1.3.1'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    jcenter()
+    maven { url 'https://kotlin.bintray.com/ktor' }
+    maven { url 'https://kotlin.bintray.com/kotlinx' }
+    maven { url "https://plugins.gradle.org/m2/" }
+}
+
+dependencies {
+    api "com.github.isyscore:common-jvm:1.3.1"
+    api "io.ktor:ktor-server-core:$ktor_version"
+    api "io.ktor:ktor-server-tomcat:$ktor_version"
+    api "io.ktor:ktor-server-host-common:$ktor_version"
+    api "io.ktor:ktor-server-sessions:$ktor_version"
+    api "io.ktor:ktor-locations:$ktor_version"
+    api "io.ktor:ktor-gson:$ktor_version"
+    api "ch.qos.logback:logback-classic:1.2.3"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+}
+
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier "javadoc"
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier "sources"
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment ->
+                signing.signPom(deployment)
+            }
+            repository(url: ossrhNexusUrl) {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            snapshotRepository(url: ossrhNexusSnapshot) {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            pom.project {
+                name "common-jvm"
+                packaging 'jar'
+                description 'iSysCore Common Kotlin Library'
+                url 'https://github.com/isyscore/common-ktor'
+                scm {
+                    connection 'https://github.com/isyscore/common-ktor'
+                    developerConnection 'https://github.com/isyscore/common-ktor'
+                    url 'https://github.com/isyscore/common-ktor'
+                }
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'https://github.com/isyscore/common-ktor/blob/main/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'isyscore'
+                        name 'isyscore'
+                        email 'hexj@isyscore.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+
