@@ -2,8 +2,16 @@
 
 package com.isyscore.kotlin.ktor
 
+import io.ktor.application.*
 import io.ktor.http.content.*
+import io.ktor.request.*
 import java.io.File
+
+suspend fun ApplicationCall.receiveMultiparts(): Map<String, PartData?> = try {
+    receiveMultipart().readAllParts().map { (it.name ?: "") to it }.toMap()
+} catch (th: Throwable) {
+    mapOf()
+}
 
 suspend fun MultiPartData.firstOrNull(f: (part: PartData) -> Boolean): PartData? {
     val list = filter(f)
