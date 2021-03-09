@@ -1,5 +1,8 @@
 package com.isyscore.kotlin.ktor.swagger
 
+import io.ktor.util.pipeline.*
+
+@ContextDsl
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
 annotation class SWRoute(val value: String = "", val tag: String = "")
