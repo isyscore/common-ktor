@@ -8,7 +8,7 @@ import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.*
 import io.ktor.gson.*
-import io.ktor.http.URLProtocol
+import io.ktor.http.*
 import io.ktor.sessions.Sessions
 import io.ktor.sessions.cookie
 import io.ktor.util.KtorExperimentalAPI
@@ -73,12 +73,27 @@ fun Application.pluginDefaultHeaders(headers: Map<String, String>? = null) = ins
 fun Application.pluginPartialContent() = install(PartialContent) { maxRangeCount = 10 }
 fun Application.pluginContentNegotiation() = install(ContentNegotiation) { gson { setPrettyPrinting() } }
 
+fun Application.pluginCORS() = install(CORS) {
+    method(HttpMethod.Get)
+    method(HttpMethod.Post)
+    method(HttpMethod.Put)
+    method(HttpMethod.Patch)
+    method(HttpMethod.Delete)
+    method(HttpMethod.Head)
+    method(HttpMethod.Options)
+    anyHost()
+    allowCredentials = true
+    allowNonSimpleContentTypes = true
+    maxAgeInSeconds = 1000 * 60 * 60 * 24
+}
+
 inline fun <reified T : Any> Application.installPlugin(
         useCompress: Boolean = false,
         sessionIdentifier: String? = "Session",
         headers: Map<String, String>? = null,
         httpOnly: Boolean = true,
         redirectHttps: Boolean = false,
+        allowCors: Boolean = false,
         init: () -> Unit) {
     if (redirectHttps) pluginRedirect()
     pluginSession<T>(sessionIdentifier, httpOnly)
@@ -86,5 +101,6 @@ inline fun <reified T : Any> Application.installPlugin(
     pluginDefaultHeaders(headers)
     pluginPartialContent()
     pluginContentNegotiation()
+    if (allowCors) pluginCORS()
     init()
 }
