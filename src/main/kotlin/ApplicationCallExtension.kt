@@ -17,9 +17,9 @@ import java.util.jar.JarFile
 import io.ktor.http.ContentDisposition
 import io.ktor.util.*
 
-@KtorExperimentalAPI
+
 fun ApplicationCall.config(cfg: String): String = application.config(cfg)
-@KtorExperimentalAPI
+
 fun ApplicationCall.ifcfg(condition: Boolean, key1: String, key2: String) = if (condition) config(key1) else config(key2)
 
 suspend fun ApplicationCall.requestParameters() = try {

@@ -20,6 +20,8 @@
  * 4. 依据名称判断某个插件是否已加载
  */
 
+@file:Suppress("unused")
+
 package com.isyscore.kotlin.ktor
 
 import io.ktor.routing.Routing
@@ -40,7 +42,7 @@ fun Routing.loadPlugin(plugPath: String, plugName: String) {
     val jarPath = File(plugPath, "$plugName.jar")
     val cfgPath = File(plugPath, "$plugName.cfg")
     if (jarPath.exists() && cfgPath.exists()) {
-        val m = cfgPath.readLines().filter { it.trim() != "" && it.contains("=") }.map { it.split("=").run { Pair(this[0], this[1]) } }.toMap()
+        val m = cfgPath.readLines().filter { it.trim() != "" && it.contains("=") }.associate { it.split("=").run { Pair(this[0], this[1]) } }
         loadPlugin(jarPath, m["PluginClass"] ?: error("PluginClass must have a value"), m["RoutingMethods"] ?: error("RoutingMethods must have a value"))
         pluginList[plugName] = (m["Routings"] ?: error("Routings must have a value")).split(",")
     }

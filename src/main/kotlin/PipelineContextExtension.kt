@@ -8,7 +8,6 @@ import io.ktor.application.call
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
-import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
 
 inline fun <reified T> PipelineContext<*, ApplicationCall>.session(init: () -> T): T {
@@ -26,5 +25,4 @@ inline fun <reified T> PipelineContext<*, ApplicationCall>.session(init: () -> T
     return ses!!
 }
 
-@KtorExperimentalAPI
 fun PipelineContext<*, ApplicationCall>.config(key: String) = application.config(key)

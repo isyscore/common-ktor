@@ -4,22 +4,20 @@ package com.isyscore.kotlin.ktor
 
 import com.isyscore.kotlin.common.decodeURLPart
 import com.isyscore.kotlin.common.normalizeAndRelativize
-import io.ktor.application.Application
-import io.ktor.application.install
+import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.gson.*
 import io.ktor.http.*
-import io.ktor.sessions.Sessions
-import io.ktor.sessions.cookie
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.sessions.*
+import org.ktorm.database.Database
 import java.io.File
 import java.nio.file.Paths
-import java.sql.Connection
+import java.sql.SQLException
+import kotlin.collections.Map
+import kotlin.collections.set
 
-@KtorExperimentalAPI
 fun Application.config(key: String) = environment.config.property(key).getString()
 
-@KtorExperimentalAPI
 fun Application.ifcfg(condition: Boolean, key1: String, key2: String) = if (condition) config(key1) else config(key2)
 
 fun Application.resourcePath(resourcePackage: String? = null): File? {
@@ -36,14 +34,6 @@ fun Application.resourcePath(resourcePackage: String? = null): File? {
     }
     return null
 }
-
-@KtorExperimentalAPI
-inline val Application.db: DB
-    get() = DB(this)
-
-@KtorExperimentalAPI
-inline val Application.conn: Connection
-    get() = db.conn()
 
 fun Application.pluginRedirect() = install(HttpsRedirect) {
     sslPort = URLProtocol.HTTPS.defaultPort
@@ -84,7 +74,7 @@ fun Application.pluginCORS() = install(CORS) {
     anyHost()
     allowCredentials = true
     allowNonSimpleContentTypes = true
-    maxAgeInSeconds = 1000 * 60 * 60 * 24
+    maxAgeInSeconds = 1000L * 60 * 60 * 24
 }
 
 inline fun <reified T : Any> Application.installPlugin(
@@ -102,5 +92,29 @@ inline fun <reified T : Any> Application.installPlugin(
     pluginPartialContent()
     pluginContentNegotiation()
     if (allowCors) pluginCORS()
+    initDatabase()
     init()
+}
+
+private lateinit var innerDatabase: Database
+
+val Application.database: Database
+    get() {
+        if (!::innerDatabase.isInitialized) {
+            throw SQLException("Database not initialized.")
+        }
+        return innerDatabase
+    }
+
+fun Application.initDatabase() {
+    val driver = config("ktor.database.driver")
+    val url = config("ktor.database.url")
+    val user = config("ktor.database.user")
+    val password = config("ktor.database.password")
+    try {
+        Class.forName(driver)
+        innerDatabase = Database.connect(url, user = user, password = password)
+    } catch (e: Exception) {
+        log.error(e.message)
+    }
 }

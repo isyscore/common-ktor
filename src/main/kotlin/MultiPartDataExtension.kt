@@ -8,7 +8,7 @@ import io.ktor.request.*
 import java.io.File
 
 suspend fun ApplicationCall.receiveMultiparts(): Map<String, PartData?> = try {
-    receiveMultipart().readAllParts().map { (it.name ?: "") to it }.toMap()
+    receiveMultipart().readAllParts().associateBy { (it.name ?: "") }
 } catch (th: Throwable) {
     mapOf()
 }

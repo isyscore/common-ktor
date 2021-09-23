@@ -14,12 +14,11 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '1.6.0'
+version '1.7.0'
 
 repositories {
     mavenCentral()
     mavenLocal()
-    jcenter()
     maven { url 'https://kotlin.bintray.com/ktor' }
     maven { url 'https://kotlin.bintray.com/kotlinx' }
     maven { url "https://plugins.gradle.org/m2/" }
@@ -27,15 +26,18 @@ repositories {
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:1.6.0"
+    api "com.github.isyscore:common-jvm:1.7.0"
     api "io.ktor:ktor-server-core:$ktor_version"
     api "io.ktor:ktor-server-tomcat:$ktor_version"
     api "io.ktor:ktor-server-host-common:$ktor_version"
     api "io.ktor:ktor-server-sessions:$ktor_version"
     api "io.ktor:ktor-locations:$ktor_version"
     api "io.ktor:ktor-gson:$ktor_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
-    api "ch.qos.logback:logback-classic:1.2.3"
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt'
+    api 'ch.qos.logback:logback-classic:1.2.6'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'mysql:mysql-connector-java:8.0.25'
 }
 
 compileKotlin {
@@ -67,7 +69,6 @@ artifacts {
 signing {
     sign configurations.archives
 }
-
 
 uploadArchives {
     repositories {
