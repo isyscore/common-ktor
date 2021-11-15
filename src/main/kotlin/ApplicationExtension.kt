@@ -57,11 +57,22 @@ fun Application.pluginCompress() = install(Compression) {
         priority = 10.0
         minimumSize(1024)
     }
+    identity { }
 }
 
-fun Application.pluginDefaultHeaders(headers: Map<String, String>? = null) = install(DefaultHeaders) { headers?.forEach { t, u -> header(t, u) } }
+fun Application.pluginDefaultHeaders(headers: Map<String, String>? = null) = install(DefaultHeaders) {
+    headers?.forEach { (t, u) -> header(t, u) }
+}
+
 fun Application.pluginPartialContent() = install(PartialContent) { maxRangeCount = 10 }
-fun Application.pluginContentNegotiation() = install(ContentNegotiation) { gson { setPrettyPrinting() } }
+fun Application.pluginContentNegotiation(sn: Boolean = false) = install(ContentNegotiation) {
+    gson {
+        if (sn) {
+            serializeNulls()
+        }
+        setPrettyPrinting()
+    }
+}
 
 fun Application.pluginCORS() = install(CORS) {
     method(HttpMethod.Get)
@@ -78,19 +89,21 @@ fun Application.pluginCORS() = install(CORS) {
 }
 
 inline fun <reified T : Any> Application.installPlugin(
-        useCompress: Boolean = false,
-        sessionIdentifier: String? = "Session",
-        headers: Map<String, String>? = null,
-        httpOnly: Boolean = true,
-        redirectHttps: Boolean = false,
-        allowCors: Boolean = false,
-        init: () -> Unit) {
+    useCompress: Boolean = false,
+    sessionIdentifier: String? = "Session",
+    headers: Map<String, String>? = null,
+    httpOnly: Boolean = true,
+    redirectHttps: Boolean = false,
+    allowCors: Boolean = false,
+    serializeNulls: Boolean = false,
+    init: () -> Unit
+) {
     if (redirectHttps) pluginRedirect()
     pluginSession<T>(sessionIdentifier, httpOnly)
     if (useCompress) pluginCompress()
     pluginDefaultHeaders(headers)
     pluginPartialContent()
-    pluginContentNegotiation()
+    pluginContentNegotiation(serializeNulls)
     if (allowCors) pluginCORS()
     initDatabase()
     init()

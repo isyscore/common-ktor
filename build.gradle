@@ -14,7 +14,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '1.7.0'
+version '1.8.1'
 
 repositories {
     mavenCentral()
@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:1.7.0"
+    api "com.github.isyscore:common-jvm:1.8.1"
     api "io.ktor:ktor-server-core:$ktor_version"
     api "io.ktor:ktor-server-tomcat:$ktor_version"
     api "io.ktor:ktor-server-host-common:$ktor_version"
@@ -47,9 +47,9 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
-}
+//tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+//    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+//}
 
 
 task javadocJar(type: Jar) {
@@ -83,9 +83,9 @@ uploadArchives {
                 authentication(userName: ossrhUsername, password: ossrhPassword)
             }
             pom.project {
-                name "common-jvm"
+                name "common-ktor"
                 packaging 'jar'
-                description 'iSysCore Common Kotlin Library'
+                description 'iSysCore Common Ktor Library'
                 url 'https://github.com/isyscore/common-ktor'
                 scm {
                     connection 'https://github.com/isyscore/common-ktor'
