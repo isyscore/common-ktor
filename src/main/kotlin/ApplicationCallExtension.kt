@@ -6,21 +6,24 @@ import com.isyscore.kotlin.common.appendPathPart
 import com.isyscore.kotlin.common.decodeURLPart
 import com.isyscore.kotlin.common.normalizeAndRelativize
 import com.isyscore.kotlin.common.toMap
-import io.ktor.application.ApplicationCall
+import io.ktor.server.application.ApplicationCall
 import io.ktor.http.HttpHeaders
-import io.ktor.request.receiveText
-import io.ktor.response.header
-import io.ktor.response.respondFile
 import java.io.File
 import java.nio.file.Paths
 import java.util.jar.JarFile
 import io.ktor.http.ContentDisposition
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.util.*
 
+fun ApplicationCall.config(key: String): String =
+    application.config(key)
 
-fun ApplicationCall.config(cfg: String): String = application.config(cfg)
+fun ApplicationCall.config(key: String, default: String): String =
+    application.config(key, default)
 
-fun ApplicationCall.ifcfg(condition: Boolean, key1: String, key2: String) = if (condition) config(key1) else config(key2)
+fun ApplicationCall.ifconfig(condition: Boolean, key1: String, key2: String): String =
+    if (condition) config(key1) else config(key2)
 
 suspend fun ApplicationCall.requestParameters() = try {
     receiveText().toMap()

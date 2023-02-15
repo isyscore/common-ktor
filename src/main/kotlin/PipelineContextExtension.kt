@@ -2,18 +2,14 @@
 
 package com.isyscore.kotlin.ktor
 
-import io.ktor.application.ApplicationCall
-import io.ktor.application.application
-import io.ktor.application.call
-import io.ktor.sessions.get
-import io.ktor.sessions.sessions
-import io.ktor.sessions.set
+import io.ktor.server.application.*
+import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.PipelineContext
 
-inline fun <reified T> PipelineContext<*, ApplicationCall>.session(init: () -> T): T {
+inline fun <reified T: Any> PipelineContext<*, ApplicationCall>.session(init: () -> T): T {
     var ses: T?
     try {
-        ses = call.sessions.get<T>()
+        ses = call.sessions.get()
         if (ses == null) {
             ses = init()
             call.sessions.set(ses)

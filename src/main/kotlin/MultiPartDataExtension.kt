@@ -2,13 +2,13 @@
 
 package com.isyscore.kotlin.ktor
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.ktor.http.content.*
-import io.ktor.request.*
+import io.ktor.server.request.*
 import java.io.File
 
 suspend fun ApplicationCall.receiveMultiparts(): Map<String, PartData?> = try {
-    receiveMultipart().readAllParts().associateBy { (it.name ?: "") }
+    receiveMultipart().readAllParts().associateBy { it.name ?: "" }
 } catch (th: Throwable) {
     mapOf()
 }

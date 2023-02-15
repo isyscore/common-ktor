@@ -24,7 +24,7 @@
 
 package com.isyscore.kotlin.ktor
 
-import io.ktor.routing.Routing
+import io.ktor.server.routing.*
 import java.io.File
 import java.net.URLClassLoader
 

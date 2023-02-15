@@ -9,105 +9,124 @@ buildscript {
     }
 }
 
+apply plugin: "java"
 apply plugin: "org.jetbrains.kotlin.jvm"
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '1.8.1'
+version '2.0.0'
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven { url 'https://kotlin.bintray.com/ktor' }
     maven { url 'https://kotlin.bintray.com/kotlinx' }
     maven { url "https://plugins.gradle.org/m2/" }
-    maven { url 'https://oss.sonatype.org/service/local/repositories/releases/content/' }
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:1.8.1"
-    api "io.ktor:ktor-server-core:$ktor_version"
-    api "io.ktor:ktor-server-tomcat:$ktor_version"
-    api "io.ktor:ktor-server-host-common:$ktor_version"
-    api "io.ktor:ktor-server-sessions:$ktor_version"
-    api "io.ktor:ktor-locations:$ktor_version"
-    api "io.ktor:ktor-gson:$ktor_version"
-    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt'
-    api 'ch.qos.logback:logback-classic:1.2.6'
+    api "com.github.isyscore:common-jvm:2.0.0"
+    api "io.ktor:ktor-server-core-jvm:$ktor_version"
+    api "io.ktor:ktor-server-cors-jvm:$ktor_version"
+    api "io.ktor:ktor-server-content-negotiation-jvm:$ktor_version"
+    api "io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version"
+    api "io.ktor:ktor-serialization-gson-jvm:$ktor_version"
+    api "io.ktor:ktor-server-resources:$ktor_version"
+    api "io.ktor:ktor-server-tomcat-jvm:$ktor_version"
+    api "io.ktor:ktor-server-config-yaml:$ktor_version"
+    api "io.ktor:ktor-server-sessions-jvm:$ktor_version"
+    api "io.ktor:ktor-server-default-headers-jvm:$ktor_version"
+    api "io.ktor:ktor-server-http-redirect-jvm:$ktor_version"
+    api "io.ktor:ktor-server-partial-content-jvm:$ktor_version"
+    api "io.ktor:ktor-server-host-common-jvm:$ktor_version"
+    api "io.ktor:ktor-server-compression-jvm:$ktor_version"
+    api "io.ktor:ktor-server-call-logging-jvm:$ktor_version"
+    api "io.ktor:ktor-server-websockets-jvm:$ktor_version"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    api "ch.qos.logback:logback-classic:1.2.11"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'mysql:mysql-connector-java:8.0.25'
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-//tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-//    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
-//}
-
-
-task javadocJar(type: Jar) {
-    from javadoc
-    classifier "javadoc"
+    kotlinOptions.jvmTarget = "17"
 }
 
 task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier "sources"
+    classifier = "sources"
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+    classifier = "javadoc"
+    from javadoc.destinationDir
 }
 
 artifacts {
     archives javadocJar, sourcesJar
 }
 
-signing {
-    sign configurations.archives
-}
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment ->
-                signing.signPom(deployment)
-            }
-            repository(url: ossrhNexusUrl) {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-            snapshotRepository(url: ossrhNexusSnapshot) {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-            pom.project {
-                name "common-ktor"
-                packaging 'jar'
-                description 'iSysCore Common Ktor Library'
-                url 'https://github.com/isyscore/common-ktor'
-                scm {
-                    connection 'https://github.com/isyscore/common-ktor'
-                    developerConnection 'https://github.com/isyscore/common-ktor'
-                    url 'https://github.com/isyscore/common-ktor'
-                }
+publishing {
+    publications {
+        mavenKotlin(MavenPublication) {
+            groupId = "com.github.isyscore"
+            artifactId = "common-ktor"
+            version = "2.0.0"
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = "common-ktor"
+                description = "iSysCore Common Kotlin/Ktor Library"
+                url = "https://github.com/isyscore/common-ktor"
+                packaging = "jar"
+
                 licenses {
                     license {
-                        name 'MIT License'
-                        url 'https://github.com/isyscore/common-ktor/blob/main/LICENSE'
+                        name = "MIT License"
+                        url = "https://github.com/isyscore/common-ktor/blob/main/LICENSE"
                     }
                 }
                 developers {
                     developer {
-                        id 'isyscore'
-                        name 'isyscore'
-                        email 'hexj@isyscore.com'
+                        id = "isyscore"
+                        name = "isyscore"
+                        email = "hexj@isyscore.com"
                     }
                 }
+                scm {
+                    connection = "https://github.com/isyscore/common-ktor"
+                    developerConnection =  "https://github.com/isyscore/common-ktor"
+                    url = "https://github.com/isyscore/common-ktor"
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "Release"
+            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = "$nexus_username"
+                password = "$nexus_password"
+            }
+        }
+        maven {
+            name = "Snapshot"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            credentials {
+                username = "$nexus_username"
+                password = "$nexus_password"
             }
         }
     }
 }
 
-
+signing {
+    sign publishing.publications.mavenKotlin
+}
