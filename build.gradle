@@ -15,17 +15,17 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '2.0.0'
+version '2.0.1'
 
 repositories {
     mavenCentral()
-    maven { url 'https://kotlin.bintray.com/ktor' }
-    maven { url 'https://kotlin.bintray.com/kotlinx' }
-    maven { url "https://plugins.gradle.org/m2/" }
+//    maven { url 'https://kotlin.bintray.com/ktor' }
+//    maven { url 'https://kotlin.bintray.com/kotlinx' }
+//    maven { url "https://plugins.gradle.org/m2/" }
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:2.0.0"
+    api "com.github.isyscore:common-jvm:2.0.1"
     api "io.ktor:ktor-server-core-jvm:$ktor_version"
     api "io.ktor:ktor-server-cors-jvm:$ktor_version"
     api "io.ktor:ktor-server-content-negotiation-jvm:$ktor_version"
@@ -48,11 +48,13 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
+sourceCompatibility = 1.8
+
 compileKotlin {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "1.8" // "17"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "1.8" // "17"
 }
 
 task sourcesJar(type: Jar) {
@@ -75,7 +77,7 @@ publishing {
         mavenKotlin(MavenPublication) {
             groupId = "com.github.isyscore"
             artifactId = "common-ktor"
-            version = "2.0.0"
+            version = "2.0.1"
             from components.java
             artifact sourcesJar
             artifact javadocJar
