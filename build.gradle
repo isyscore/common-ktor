@@ -6,33 +6,37 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+
     }
 }
 
 apply plugin: "java"
 apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "org.jetbrains.kotlin.plugin.serialization"
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '2.0.1'
+version '2.2.0'
 
 repositories {
     mavenCentral()
-//    maven { url 'https://kotlin.bintray.com/ktor' }
-//    maven { url 'https://kotlin.bintray.com/kotlinx' }
-//    maven { url "https://plugins.gradle.org/m2/" }
+    mavenLocal()
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:2.0.1"
+    api "com.github.isyscore:common-jvm:2.2.0"
     api "io.ktor:ktor-server-core-jvm:$ktor_version"
     api "io.ktor:ktor-server-cors-jvm:$ktor_version"
+    api "io.ktor:ktor-server-auth-jvm:$ktor_version"
     api "io.ktor:ktor-server-content-negotiation-jvm:$ktor_version"
     api "io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version"
     api "io.ktor:ktor-serialization-gson-jvm:$ktor_version"
+    api "io.ktor:ktor-serialization-jackson:$ktor_version"
     api "io.ktor:ktor-server-resources:$ktor_version"
     api "io.ktor:ktor-server-tomcat-jvm:$ktor_version"
+    api "io.ktor:ktor-server-netty-jvm:$ktor_version"
     api "io.ktor:ktor-server-config-yaml:$ktor_version"
     api "io.ktor:ktor-server-sessions-jvm:$ktor_version"
     api "io.ktor:ktor-server-default-headers-jvm:$ktor_version"
@@ -42,9 +46,7 @@ dependencies {
     api "io.ktor:ktor-server-compression-jvm:$ktor_version"
     api "io.ktor:ktor-server-call-logging-jvm:$ktor_version"
     api "io.ktor:ktor-server-websockets-jvm:$ktor_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
     api "ch.qos.logback:logback-classic:1.2.11"
-
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -77,7 +79,7 @@ publishing {
         mavenKotlin(MavenPublication) {
             groupId = "com.github.isyscore"
             artifactId = "common-ktor"
-            version = "2.0.1"
+            version = "2.2.0"
             from components.java
             artifact sourcesJar
             artifact javadocJar
