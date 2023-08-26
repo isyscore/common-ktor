@@ -2,11 +2,23 @@
 
 package com.isyscore.kotlin.ktor
 
+import com.fasterxml.jackson.core.util.DefaultIndenter
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer
 import com.isyscore.kotlin.common.decodeURLPart
 import com.isyscore.kotlin.common.normalizeAndRelativize
 import io.ktor.http.*
-import io.ktor.serialization.gson.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -16,28 +28,28 @@ import io.ktor.server.plugins.httpsredirect.*
 import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.resources.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
-import io.ktor.websocket.*
-import org.ktorm.database.Database
-import org.slf4j.event.*
+import io.ktor.util.*
+import org.ktorm.jackson.KtormModule
 import org.slf4j.event.Level
 import java.io.File
 import java.nio.file.Paths
-import java.sql.SQLException
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import kotlin.collections.set
 
 fun Application.config(key: String): String =
-    environment.config.property(key).getString()
+        environment.config.property(key).getString()
 
 fun Application.config(key: String, default: String): String =
-    environment.config.propertyOrNull(key)?.getString() ?: default
+        environment.config.propertyOrNull(key)?.getString() ?: default
 
 fun Application.ifconfig(condition: Boolean, key1: String, key2: String): String =
-    if (condition) config(key1) else config(key2)
+        if (condition) config(key1) else config(key2)
 
 fun Application.resourcePath(resourcePackage: String? = null): File? {
     val packagePath = (resourcePackage?.replace('.', '/') ?: "")
@@ -59,15 +71,59 @@ fun Application.pluginRedirect() = install(HttpsRedirect) {
     permanentRedirect = true
 }
 
-inline fun <reified T : Any> Application.pluginSession(
-    sessionIdentifier: String? = "Session",
-    httpOnly: Boolean = true
+fun ObjectMapper.config(localDatePattern: String, localTimePattern: String, localDateTimePattern: String): ObjectMapper {
+    registerModule(KtormModule())
+    registerModule(JavaTimeModule().apply {
+        addDeserializer(LocalDate::class.java, LocalDateDeserializer(DateTimeFormatter.ofPattern(localDatePattern)))
+        addSerializer(LocalDate::class.java, LocalDateSerializer(DateTimeFormatter.ofPattern(localDatePattern)))
+        addDeserializer(LocalTime::class.java, LocalTimeDeserializer(DateTimeFormatter.ofPattern(localTimePattern)))
+        addSerializer(LocalTime::class.java, LocalTimeSerializer(DateTimeFormatter.ofPattern(localTimePattern)))
+        addDeserializer(LocalDateTime::class.java, LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(localDateTimePattern)))
+        addSerializer(LocalDateTime::class.java, LocalDateTimeSerializer(DateTimeFormatter.ofPattern(localDateTimePattern)))
+    })
+    configure(SerializationFeature.INDENT_OUTPUT, true)
+    setDefaultLeniency(true)
+    setDefaultPrettyPrinter(DefaultPrettyPrinter().apply {
+        indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
+        indentObjectsWith(DefaultIndenter("  ", "\n"))
+    })
+    return this
+}
+
+inline fun <reified T : Any> generateSerializer(
+        localDatePattern: String, localTimePattern: String, localDateTimePattern: String
+): SessionSerializer<T> = object : SessionSerializer<T> {
+    private val om = ObjectMapper().config(localDatePattern, localTimePattern, localDateTimePattern)
+    override fun deserialize(text: String): T = om.readValue(text, T::class.java)
+    override fun serialize(session: T): String = om.writeValueAsString(session)
+}
+
+
+inline fun <reified T : Principal> Application.pluginSession(
+        sessionIdentifier: String? = "Session",
+        cookiePath: String = "/",
+        httpOnly: Boolean = true,
+        maxAge: Long = 60 * 60 * 24,
+        // 是否要选择 Cookie 加密
+        isSecret: Boolean = false,
+        secretEncryptKey: String = "",
+        secretSignKey: String = "",
+        // Session 对象的序列化器，时间格式
+        localDatePattern: String = "yyyy-MM-dd",
+        localTimePattern: String = "hh:mm:ss",
+        localDateTimePattern: String = "yyyy-MM-dd hh:mm:ss"
 ) {
     if (sessionIdentifier != null) {
         install(Sessions) {
             cookie<T>(sessionIdentifier) {
                 cookie.extensions["SameSite"] = "lax"
                 cookie.httpOnly = httpOnly
+                cookie.path = cookiePath
+                cookie.maxAgeInSeconds = maxAge
+                serializer = generateSerializer(localDatePattern, localTimePattern, localDateTimePattern)
+                if (isSecret) {
+                    transform(SessionTransportTransformerEncrypt(hex(secretEncryptKey), hex(secretSignKey)))
+                }
             }
         }
     }
@@ -92,10 +148,13 @@ fun Application.pluginPartialContent() = install(PartialContent) {
     maxRangeCount = 10
 }
 
-fun Application.pluginContentNegotiation(sn: Boolean = false) = install(ContentNegotiation) {
-    gson {
-        if (sn) serializeNulls()
-        setPrettyPrinting()
+fun Application.pluginContentNegotiation(
+        localDatePattern: String = "yyyy-MM-dd",
+        localTimePattern: String = "hh:mm:ss",
+        localDateTimePattern: String = "yyyy-MM-dd hh:mm:ss"
+) = install(ContentNegotiation) {
+    jackson {
+        config(localDatePattern, localTimePattern, localDateTimePattern)
     }
 }
 
@@ -130,49 +189,28 @@ fun Application.pluginCallLogging(lv: Level = Level.INFO) = install(CallLogging)
     }
 }
 
+inline fun <reified T : Principal> Application.pluginAuthSession(
+        sessionName: String, crossinline configure: SessionAuthenticationProvider.Config<T>.() -> Unit
+) = install(Authentication) {
+    session<T>(sessionName, configure)
+}
+
 @Deprecated("installPlugin is Deprecated in common-ktor 2.0.0")
-inline fun <reified T : Any> Application.installPlugin(
-    useCompress: Boolean = false,
-    sessionIdentifier: String? = "Session",
-    headers: Map<String, String>? = null,
-    httpOnly: Boolean = true,
-    redirectHttps: Boolean = false,
-    allowCors: Boolean = false,
-    serializeNulls: Boolean = false,
-    init: () -> Unit
+inline fun <reified T : Principal> Application.installPlugin(
+        useCompress: Boolean = false,
+        sessionIdentifier: String? = "Session",
+        headers: Map<String, String>? = null,
+        httpOnly: Boolean = true,
+        redirectHttps: Boolean = false,
+        allowCors: Boolean = false,
+        init: () -> Unit
 ) {
     if (redirectHttps) pluginRedirect()
-    pluginSession<T>(sessionIdentifier, httpOnly)
+    pluginSession<T>(sessionIdentifier, "/", httpOnly)
     if (useCompress) pluginCompress()
     pluginDefaultHeaders(headers)
     pluginPartialContent()
-    pluginContentNegotiation(serializeNulls)
+    pluginContentNegotiation()
     if (allowCors) pluginCORS()
-    initDatabase()
     init()
-}
-
-private lateinit var innerDatabase: Database
-
-@Deprecated("database is Deprecated in common-ktor 2.0.0")
-val Application.database: Database
-    get() {
-        if (!::innerDatabase.isInitialized) {
-            throw SQLException("Database not initialized.")
-        }
-        return innerDatabase
-    }
-
-@Deprecated("initDatabase is Deprecated in common-ktor 2.0.0")
-fun Application.initDatabase() {
-    val driver = config("ktor.database.driver")
-    val url = config("ktor.database.url")
-    val user = config("ktor.database.user")
-    val password = config("ktor.database.password")
-    try {
-        Class.forName(driver)
-        innerDatabase = Database.connect(url, user = user, password = password)
-    } catch (e: Exception) {
-        log.error(e.message)
-    }
 }
