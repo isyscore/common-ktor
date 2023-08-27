@@ -15,6 +15,9 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer
 import com.isyscore.kotlin.common.decodeURLPart
 import com.isyscore.kotlin.common.normalizeAndRelativize
+import com.isyscore.kotlin.ktor.plugin.RoleBasedAuthorization
+import com.isyscore.kotlin.ktor.plugin.RoleBasedAuthorizationProvider
+import com.isyscore.kotlin.ktor.plugin.roleSession
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -31,6 +34,7 @@ import io.ktor.server.resources.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
 import io.ktor.util.*
+import io.ktor.util.pipeline.*
 import org.ktorm.jackson.KtormModule
 import org.slf4j.event.Level
 import java.io.File
@@ -193,6 +197,12 @@ inline fun <reified T : Principal> Application.pluginAuthSession(
         sessionName: String, crossinline configure: SessionAuthenticationProvider.Config<T>.() -> Unit
 ) = install(Authentication) {
     session<T>(sessionName, configure)
+}
+
+inline fun <reified T : Principal> Application.pluginRoleAuthorization(
+        crossinline configure: RoleBasedAuthorizationProvider.Config<T>.() -> Unit
+) = install(RoleBasedAuthorization) {
+    roleSession<T>(configure)
 }
 
 @Deprecated("installPlugin is Deprecated in common-ktor 2.0.0")
