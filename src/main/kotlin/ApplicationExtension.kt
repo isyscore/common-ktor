@@ -194,7 +194,7 @@ fun Application.pluginCallLogging(lv: Level = Level.INFO) = install(CallLogging)
 }
 
 inline fun <reified T : Principal> Application.pluginAuthSession(
-        sessionName: String, crossinline configure: SessionAuthenticationProvider.Config<T>.() -> Unit
+        sessionName: String? = null, crossinline configure: SessionAuthenticationProvider.Config<T>.() -> Unit
 ) = install(Authentication) {
     session<T>(sessionName, configure)
 }
