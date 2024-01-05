@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '2.2.1.1'
+version '2.2.2.2'
 
 repositories {
     mavenCentral()
@@ -60,13 +60,11 @@ compileTestKotlin {
 }
 
 task sourcesJar(type: Jar) {
-//    classifier = "sources"
     archiveClassifier = "sources"
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar) {
-//    classifier = "javadoc"
     archiveClassifier = "javadoc"
     from javadoc.destinationDir
 }
@@ -81,7 +79,7 @@ publishing {
         mavenKotlin(MavenPublication) {
             groupId = "com.github.isyscore"
             artifactId = "common-ktor"
-            version = "2.2.1.1"
+            version = "2.2.2.2"
             from components.java
              artifact sourcesJar
              artifact javadocJar
@@ -118,16 +116,16 @@ publishing {
             name = "Release"
             url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                username = "$nexus_username"
-                password = "$nexus_password"
+                username = "$nexusUsername"
+                password = "$nexusPassword"
             }
         }
         maven {
             name = "Snapshot"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
             credentials {
-                username = "$nexus_username"
-                password = "$nexus_password"
+                username = "$nexusUsername"
+                password = "$nexusPassword"
             }
         }
     }
