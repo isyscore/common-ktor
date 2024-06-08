@@ -75,15 +75,15 @@ fun Application.pluginRedirect() = install(HttpsRedirect) {
     permanentRedirect = true
 }
 
-fun ObjectMapper.config(localDatePattern: String, localTimePattern: String, localDateTimePattern: String): ObjectMapper {
+fun ObjectMapper.config(localDatePattern: DateTimeFormatter, localTimePattern: DateTimeFormatter, localDateTimePattern: DateTimeFormatter): ObjectMapper {
     registerModule(KtormModule())
     registerModule(JavaTimeModule().apply {
-        addDeserializer(LocalDate::class.java, LocalDateDeserializer(DateTimeFormatter.ofPattern(localDatePattern)))
-        addSerializer(LocalDate::class.java, LocalDateSerializer(DateTimeFormatter.ofPattern(localDatePattern)))
-        addDeserializer(LocalTime::class.java, LocalTimeDeserializer(DateTimeFormatter.ofPattern(localTimePattern)))
-        addSerializer(LocalTime::class.java, LocalTimeSerializer(DateTimeFormatter.ofPattern(localTimePattern)))
-        addDeserializer(LocalDateTime::class.java, LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(localDateTimePattern)))
-        addSerializer(LocalDateTime::class.java, LocalDateTimeSerializer(DateTimeFormatter.ofPattern(localDateTimePattern)))
+        addDeserializer(LocalDate::class.java, LocalDateDeserializer(localDatePattern))
+        addSerializer(LocalDate::class.java, LocalDateSerializer(localDatePattern))
+        addDeserializer(LocalTime::class.java, LocalTimeDeserializer(localTimePattern))
+        addSerializer(LocalTime::class.java, LocalTimeSerializer(localTimePattern))
+        addDeserializer(LocalDateTime::class.java, LocalDateTimeDeserializer(localDateTimePattern))
+        addSerializer(LocalDateTime::class.java, LocalDateTimeSerializer(localDateTimePattern))
     })
     configure(SerializationFeature.INDENT_OUTPUT, true)
     setDefaultLeniency(true)
@@ -95,7 +95,7 @@ fun ObjectMapper.config(localDatePattern: String, localTimePattern: String, loca
 }
 
 inline fun <reified T : Any> generateSerializer(
-        localDatePattern: String, localTimePattern: String, localDateTimePattern: String
+        localDatePattern: DateTimeFormatter, localTimePattern: DateTimeFormatter, localDateTimePattern: DateTimeFormatter
 ): SessionSerializer<T> = object : SessionSerializer<T> {
     private val om = ObjectMapper().config(localDatePattern, localTimePattern, localDateTimePattern)
     override fun deserialize(text: String): T = om.readValue(text, T::class.java)
@@ -113,9 +113,9 @@ inline fun <reified T : Principal> Application.pluginSession(
         secretEncryptKey: String = "",
         secretSignKey: String = "",
         // Session 对象的序列化器，时间格式
-        localDatePattern: String = "yyyy-MM-dd",
-        localTimePattern: String = "hh:mm:ss",
-        localDateTimePattern: String = "yyyy-MM-dd hh:mm:ss"
+        localDatePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+        localTimePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss"),
+        localDateTimePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 ) {
     if (sessionIdentifier != null) {
         install(Sessions) {
@@ -153,9 +153,9 @@ fun Application.pluginPartialContent() = install(PartialContent) {
 }
 
 fun Application.pluginContentNegotiation(
-        localDatePattern: String = "yyyy-MM-dd",
-        localTimePattern: String = "hh:mm:ss",
-        localDateTimePattern: String = "yyyy-MM-dd hh:mm:ss"
+        localDatePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+        localTimePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss"),
+        localDateTimePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 ) = install(ContentNegotiation) {
     jackson {
         config(localDatePattern, localTimePattern, localDateTimePattern)
@@ -179,8 +179,8 @@ fun Application.pluginCORS() = install(CORS) {
     allowMethod(HttpMethod.Delete)
     allowMethod(HttpMethod.Head)
     allowMethod(HttpMethod.Options)
-    allowHeader(HttpHeaders.Authorization)
-    anyHost()
+    allowHeaders { true }
+    allowOrigins { true }
     allowCredentials = true
     allowNonSimpleContentTypes = true
     maxAgeInSeconds = 1000L * 60 * 60 * 24
