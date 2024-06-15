@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '2.2.2.5'
+version '2.2.4.0'
 
 repositories {
     mavenCentral()
@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:2.2.0"
+    api "com.github.isyscore:common-jvm:2.2.4.0"
     api "io.ktor:ktor-server-core-jvm:$ktor_version"
     api "io.ktor:ktor-server-cors-jvm:$ktor_version"
     api "io.ktor:ktor-server-auth-jvm:$ktor_version"
@@ -46,7 +46,7 @@ dependencies {
     api "io.ktor:ktor-server-compression-jvm:$ktor_version"
     api "io.ktor:ktor-server-call-logging-jvm:$ktor_version"
     api "io.ktor:ktor-server-websockets-jvm:$ktor_version"
-    api "ch.qos.logback:logback-classic:1.2.11"
+    api 'ch.qos.logback:logback-classic:1.4.12'
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -79,7 +79,7 @@ publishing {
         mavenKotlin(MavenPublication) {
             groupId = "com.github.isyscore"
             artifactId = "common-ktor"
-            version = "2.2.2.5"
+            version = "2.2.4.0"
             from components.java
              artifact sourcesJar
              artifact javadocJar
