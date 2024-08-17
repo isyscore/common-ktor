@@ -41,6 +41,7 @@ fun ApplicationCall.resolveFileContent(path: String, resourcePackage: String? = 
                 val file = File(url.path.decodeURLPart())
                 return if (file.isFile) file.readText() else null
             }
+
             "jar" -> {
                 return if (packagePath.endsWith("/")) {
                     null
@@ -65,6 +66,7 @@ fun ApplicationCall.resolveFileBytes(path: String, resourcePackage: String? = nu
                 val file = File(url.path.decodeURLPart())
                 return if (file.isFile) file.readBytes() else null
             }
+
             "jar" -> {
                 return if (packagePath.endsWith("/")) {
                     null
@@ -93,6 +95,7 @@ suspend fun ApplicationCall.resolveFileSave(dest: File, path: String, resourcePa
                     ret = true
                 }
             }
+
             "jar" -> {
                 if (!packagePath.endsWith("/")) {
                     val jar = JarFile(findContainingJarFile(url.toString()))
@@ -135,3 +138,38 @@ suspend fun ApplicationCall.sendDownload(file: File, name: String? = null) {
 
 suspend fun ApplicationCall.sendDownload(filePath: String, name: String? = null) = sendDownload(File(filePath), name)
 
+suspend fun ApplicationCall.commonRespond(succ: Boolean, errInfo: Pair<Int, String>) {
+    if (succ) {
+        respond(Result.successNoData())
+    } else {
+        respond(Result.errorNoData(code = errInfo.first, message = errInfo.second))
+    }
+}
+
+suspend fun ApplicationCall.commonRespond(succ: Boolean, errInfo: Pair<Int, String>, vararg args: Any?) {
+    if (succ) {
+        respond(Result.successNoData())
+    } else {
+        respond(Result.errorNoData(code = errInfo.first, message = errInfo.second.format(*args)))
+    }
+}
+
+suspend fun <T> ApplicationCall.succRespond(data: T) {
+    respond(Result.success(data = data))
+}
+
+suspend fun <T> ApplicationCall.succRespond(data: T, message: String) {
+    respond(Result.success(message = message, data = data))
+}
+
+suspend fun <T> ApplicationCall.succRespond(data: T, message: String, vararg args: Any?) {
+    respond(Result.success(message = message.format(*args), data = data))
+}
+
+suspend fun ApplicationCall.errorRespond(err: Pair<Int, String>) {
+    respond(Result.errorNoData(code = err.first, message = err.second))
+}
+
+suspend fun ApplicationCall.errorRespond(err: Pair<Int, String>, vararg args: Any?) {
+    respond(Result.errorNoData(code = err.first, message = err.second.format(*args)))
+}
