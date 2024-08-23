@@ -113,7 +113,7 @@ fun ObjectMapper.config(localDatePattern: DateTimeFormatter, localTimePattern: D
         indentObjectsWith(DefaultIndenter("  ", "\n"))
     })
 
-    setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    setSerializationInclusion(JsonInclude.Include.ALWAYS)
     enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
     deactivateDefaultTyping()
     return this
