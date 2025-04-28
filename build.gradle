@@ -18,15 +18,14 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.github.isyscore'
-version '2.3.0.0'
+version '3.0.0.0'
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 dependencies {
-    api "com.github.isyscore:common-jvm:2.3.2.5"
+    api "com.github.isyscore:common-jvm:3.0.0.0"
     api "io.ktor:ktor-server-core-jvm:$ktor_version"
     api "io.ktor:ktor-server-cors-jvm:$ktor_version"
     api "io.ktor:ktor-server-auth-jvm:$ktor_version"
@@ -35,7 +34,6 @@ dependencies {
     api "io.ktor:ktor-serialization-gson-jvm:$ktor_version"
     api "io.ktor:ktor-serialization-jackson:$ktor_version"
     api "io.ktor:ktor-server-resources:$ktor_version"
-    api "io.ktor:ktor-server-tomcat-jvm:$ktor_version"
     api "io.ktor:ktor-server-netty-jvm:$ktor_version"
     api "io.ktor:ktor-server-config-yaml:$ktor_version"
     api "io.ktor:ktor-server-sessions-jvm:$ktor_version"
@@ -46,17 +44,17 @@ dependencies {
     api "io.ktor:ktor-server-compression-jvm:$ktor_version"
     api "io.ktor:ktor-server-call-logging-jvm:$ktor_version"
     api "io.ktor:ktor-server-websockets-jvm:$ktor_version"
-    api 'ch.qos.logback:logback-classic:1.4.12'
+    api 'ch.qos.logback:logback-classic:1.5.18'
     testImplementation 'junit:junit:4.13.2'
 }
 
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8" // "17"
+    kotlinOptions.jvmTarget = "17" // "17"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8" // "17"
+    kotlinOptions.jvmTarget = "17" // "17"
 }
 
 task sourcesJar(type: Jar) {
@@ -79,7 +77,7 @@ publishing {
         mavenKotlin(MavenPublication) {
             groupId = "com.github.isyscore"
             artifactId = "common-ktor"
-            version = "2.3.0.0"
+            version = "3.0.0.0"
             from components.java
              artifact sourcesJar
              artifact javadocJar

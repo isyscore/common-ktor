@@ -140,36 +140,36 @@ suspend fun ApplicationCall.sendDownload(filePath: String, name: String? = null)
 
 suspend fun ApplicationCall.commonRespond(succ: Boolean, errInfo: Pair<Int, String>) {
     if (succ) {
-        respond(Result.successNoData())
+        respond(KResult.successNoData())
     } else {
-        respond(Result.errorNoData(code = errInfo.first, message = errInfo.second))
+        respond(KResult.errorNoData(code = errInfo.first, message = errInfo.second))
     }
 }
 
 suspend fun ApplicationCall.commonRespond(succ: Boolean, errInfo: Pair<Int, String>, vararg args: Any?) {
     if (succ) {
-        respond(Result.successNoData())
+        respond(KResult.successNoData())
     } else {
-        respond(Result.errorNoData(code = errInfo.first, message = errInfo.second.format(*args)))
+        respond(KResult.errorNoData(code = errInfo.first, message = errInfo.second.format(*args)))
     }
 }
 
 suspend fun <T> ApplicationCall.succRespond(data: T) {
-    respond(Result.success(data = data))
+    respond(KResult.success(data = data))
 }
 
 suspend fun <T> ApplicationCall.succRespond(data: T, message: String) {
-    respond(Result.success(message = message, data = data))
+    respond(KResult.success(message = message, data = data))
 }
 
 suspend fun <T> ApplicationCall.succRespond(data: T, message: String, vararg args: Any?) {
-    respond(Result.success(message = message.format(*args), data = data))
+    respond(KResult.success(message = message.format(*args), data = data))
 }
 
 suspend fun ApplicationCall.errorRespond(err: Pair<Int, String>) {
-    respond(Result.errorNoData(code = err.first, message = err.second))
+    respond(KResult.errorNoData(code = err.first, message = err.second))
 }
 
 suspend fun ApplicationCall.errorRespond(err: Pair<Int, String>, vararg args: Any?) {
-    respond(Result.errorNoData(code = err.first, message = err.second.format(*args)))
+    respond(KResult.errorNoData(code = err.first, message = err.second.format(*args)))
 }

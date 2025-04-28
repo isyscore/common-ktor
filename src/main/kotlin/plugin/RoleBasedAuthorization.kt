@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.isyscore.kotlin.ktor.plugin
 
 import io.ktor.server.application.*
@@ -10,6 +12,7 @@ import kotlin.reflect.KClass
 enum class RoleAuthorizationType { ALL, ANY, NONE }
 
 class RoleBasedAuthorization(internal var config: RoleBasedAuthorizationConfig) {
+
     fun configure(block: RoleBasedAuthorizationConfig.() -> Unit) {
         val newConfiguration = config.copy()
         block(newConfiguration)
@@ -49,7 +52,7 @@ val RoleAuthenticationInterceptors: RouteScopedPlugin<RoleBasedAuthorizationConf
         }
 
 private class RoleAuthorizationRouteSelector(private val description: Set<String>) : RouteSelector() {
-    override fun evaluate(context: RoutingResolveContext, segmentIndex: Int): RouteSelectorEvaluation =
+    override suspend fun evaluate(context: RoutingResolveContext, segmentIndex: Int): RouteSelectorEvaluation =
             RouteSelectorEvaluation.Transparent
 
     override fun toString(): String = "(authorize ${description.joinToString(",")})"

@@ -18,7 +18,8 @@ inline fun <reified T: Any> PipelineContext<*, ApplicationCall>.session(init: ()
         ses = init()
         call.sessions.set(ses)
     }
-    return ses!!
+    return ses
 }
 
-fun PipelineContext<*, ApplicationCall>.config(key: String) = application.config(key)
+fun PipelineContext<*, ApplicationCall>.config(key: String) = call.application.config(key)
+fun PipelineContext<*, ApplicationCall>.config(key: String, def: String) = call.application.config(key, def)
